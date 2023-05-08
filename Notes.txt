@@ -1,0 +1,71 @@
+Basic Infra:
+- ASP.NET Core Web Api
+	-- Can go to EC2
+	-- Amazon ECS + docker + App Mesh
+	
+- AWS Lamda .Net Core
+	-- Deployed to AWS Lamda
+	
+
+In more detail:
+
+Dynamic Content: User -> Cloud Front -> App Load Balancer -> ECS -> DB
+Static Content: User -> Cloud Front -> S3
+
+
+AWS Congnito:
+For IDP and Authentication purpose
+
+API Gateway:
+- API Catalogue and docs
+- Simiplifies monitoring
+- Can perform Authentication and Autherization
+- Options:
+	- AWS API Gateway
+	- Google Apigee
+	- Kong
+
+Microservice Chassis:
+- Foundation for developing microservices and performing cross-cutting tasks
+
+Types for Microservices
+- Serverless 
+	- Chassis provided by cloud provider
+	- Scalling is provided by cloud provider
+	- No access to the execution env
+	
+- Containerized
+	- Application and OS are packaged into one image i.e. a Docker Image
+	- Can be deployed to a container platform i.e. Kubernetes
+	- Access to execution env via ssh or RDP
+	- No limitation to dev languages
+	- Can support complex deployment scenarios e.g. Blue/Green deployment
+	
+	
+Create Lamda with API Gateway:
+- Create a class Library 
+- Add dependencies
+	- Amazon.Lambda.Core
+	- Amazon.Lambda.APIGatewayEvents
+	- Amazon.Lambda.Serialization.SystemTextJson
+- Install tools for packages
+	- dotnet tool install --global Amazon.Lambda.Tools --version 5.6.6
+- Code a lamda function
+- Package  a function	
+	- dotnet lambda package <csproj> -o package.zip
+- Go to AWS Console
+	- Create a function
+	- Select .Net Core 6
+	- In the code, upload the zip
+	- Test the service
+	- Monitor the logs
+- Create IAM role and give lamda permission for S3 or DynamoDb permission
+	- Db connection string can be provided via Env Variable in Lambda
+- DynamoDb
+	- Create a Table
+	- Partition Key:  for partition and sharding
+- Add data saving and fetching logic in lambda code
+	- add reference to AWSSDK.DynamoDb
+- Go to APi Gateway
+	- Add Resource
+	- Point to lambda
