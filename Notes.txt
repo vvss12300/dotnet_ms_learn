@@ -25,8 +25,14 @@ API Gateway:
 	- Google Apigee
 	- Kong
 
-Microservice Chassis:
-- Foundation for developing microservices and performing cross-cutting tasks
+Microservices:
+- Microservice Chassis
+	- Foundation for developing microservices and performing cross-cutting tasks
+- Each MS is designed to handle a specific business capability
+- The domain boundary separates one MS from another
+- By defining clear domain boundaries, microservies can be independently developed, deployed and scaled
+
+
 
 Types for Microservices
 - Serverless 
@@ -69,3 +75,87 @@ Create Lamda with API Gateway:
 - Go to APi Gateway
 	- Add Resource
 	- Point to lambda
+- Test using Postman
+
+
+CQRS Pattern
+- Command Query Responsibility Segregation
+- Segregates command and query for improved performance
+	- command that inserts and update data 
+	- query that read data
+- Why?
+	- The volume of read is higher than write
+	- Read queries are complex then write
+	- Useful when read need to performed on multiple sources and result need to be aggregated
+- Pattern
+	Client -> Command -> Write Database
+	Write Database -> Sends Event to Event Bus
+	Read Service -> Listen to event bus -> Apply Transform -> Store in Read Database
+	Client -> Query -> Read Database
+	
+	
+Fan Out Pattern
+- MS published an event
+- Event Bus poulates the event to many subscribes concurrently
+- To solve this, we use Idempotent Consumer pattern:
+	- Assign unique Id to event
+	- MS stores the event id to table
+	- On recieving the event, MS first checks table if another MS is processing the request
+	- If yes, then ignore the event else add that to table
+
+SNS (Simple Notification Service)
+- FIFO
+	- Maintains message ordering
+	- Exactly once delivery
+	- Protocol: SQS
+	
+- Standard	
+	- Doesn't Guarantee Ordering (on  Best Effort basis)
+	- Highest throughput
+	- Protocols: SQS, Lambda, HTTP, SMS, Email, Mobile Application Endpoints
+
+- Publish SNS via Lambda
+	- Create a topic and copy arn
+	- Give Lambda access (IAM Role) to raise a SNS topic
+	- Add topic arn as Env variable in Lambda (Best practice)
+	- Go to code
+		- Add nuget package: Amazon.SimpleNotificationService
+		- var snsClient = new AmazonSimpleNotificationServiceClient();
+		- var snsResponse = await snsClient.PublishAsync(Environment.GetEnvironmentVariable("SNSTopic"), JsonConvert.SerializeObject(hotel));
+		
+
+Amazon OpenSearch Service
+- To quicky searching data
+- Based on Elastic Search
+- Every search instance is called domain
+- Costly (based on cluster configuration)
+
+
+Containerization:
+Packaging and Deploying app in a lightweighht and portable env called a container
+Includes
+	- OS
+	- App 
+	- App dependencies
+Benefits:
+	- Can be deployed on any cloud provider or on-prem
+	- Control over execution env
+	- Not limited to any programming language
+Docker is a famous Containerization software
+	- Contents to create a container is stored in a file called image
+	- Docker container is the realization of docker image
+	
+Process of Creating a Docker Image
+- Write and publish Code
+- Create a file called "dockerfile"
+- Run "docker build command" to create image
+- Push the image to Container Registry
+- Deploy to desired env
+
+Docker Services in AWS:
+- ECS
+	- Fargate (Fully managed by AWS)
+		- Task: Short lived, small and stateless operations
+		- Service: Long lived, stateful and larger containers
+	- EC2 (managed by us): Better for high load or traffic systems
+	- EKS: Elastic Kubernatics service
